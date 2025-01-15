@@ -1,68 +1,81 @@
+using System.Collections;
 using UnityEngine;
-using UnityEngine.Pool;
-using Random = UnityEngine.Random;
+
+
 
 public class Spawner : MonoBehaviour
 {
-    [SerializeField] private int _poolMaxSize = 20;
-    [SerializeField] private int _poolCapacity = 3;
-    [SerializeField] private float _repairRate = 0.2f;
-    [SerializeField] private Cube _prefab;
+    [SerializeField] private int _startPoolSize = 5;
+    [SerializeField] private int _maxPoolSize = 10;
+    [SerializeField] private float _spawnTime = 1f;
+    [SerializeField] private Cube _cubePrefab; 
+    [SerializeField] private ObjectPool<Cube> _cubePool;
+    [SerializeField] private bool _isRain;
+    [SerializeField]private SpawnZone _spawnZone;
 
-    [SerializeField] private GameObject _spawnPlane;
-    [SerializeField] private float _spawnZoneHeight = 15f;
-    [SerializeField] private float _spawnZoneWidth;
-    [SerializeField] private float _spawnZoneDepth;
-
-    private ObjectPool<Cube> _pool;
+    private WaitForSeconds wait;
 
     private void Awake()
     {
-        _pool = new ObjectPool<Cube>(
-        createFunc: () => Instantiate(_prefab),
-        actionOnGet: (cube) => ActionOnGet(cube),
-        actionOnRelease: (cube) => cube.gameObject.SetActive(false),
-        actionOnDestroy: (cube) => Destroy(cube),
-        collectionCheck: true,
-        defaultCapacity: _poolCapacity,
-        maxSize: _poolMaxSize) ;
-
-        Collider planeRenderer = GetComponent<Collider>();
-
-        if (planeRenderer != null)
+        wait = new WaitForSeconds(_spawnTime);
+        _cubePool = new ObjectPool<Cube>(_cubePrefab, _startPoolSize);
+    }
+   
+    private void Update()
+    {
+        if (Input.GetMouseButtonDown(0))
         {
-            _spawnZoneWidth = planeRenderer.bounds.size.x;
-            _spawnZoneDepth = planeRenderer.bounds.size.z;
+            if (_isRain)
+            {
+                StopCounting();
+            }
+            else
+            {
+                StartCounting();
+            }
         }
     }
 
-    private Vector3 GenerateSpawnPoint()
+    private void OnValidate()
     {
-        float randomX = Random.Range(-_spawnZoneWidth / 2, _spawnZoneWidth / 2);
-        float randomZ = Random.Range(-_spawnZoneDepth / 2, _spawnZoneDepth / 2);
-        return new Vector3(randomX, _spawnZoneHeight, randomZ);
+        if (_startPoolSize > _maxPoolSize)
+        {
+            _maxPoolSize = _startPoolSize + 1;
+        }
     }
 
-    private void ActionOnGet(Cube cube)
+    private void StartCounting()
     {
-        cube.transform.position = GenerateSpawnPoint();
-        cube.GetComponent<Rigidbody>().velocity = Vector3.zero;
+        _isRain = true;
+        StartCoroutine(SpawnAfterDelay());
+    }
+
+    private void StopCounting()
+    {
+        _isRain = false;
+        StopCoroutine(SpawnAfterDelay());
+    }
+
+    private IEnumerator SpawnAfterDelay()
+    {
+        while(_isRain)
+        {
+            yield return wait;
+            SpawnCube();
+        }
+    }
+
+    private void SpawnCube()
+    {
+        Cube cube = _cubePool.Get();
+        cube.transform.position = _spawnZone.GenerateSpawnPoint();
+        cube.EndLifeTime += _cubePool.Release;
         cube.gameObject.SetActive(true);
     }
 
-    void Start()
+    private void Release(Cube cube)
     {
-        InvokeRepeating(nameof(GetCube), 0.0f, _repairRate);
+        cube.EndLifeTime -= Release;
+        _cubePool.Release(cube);
     }
-
-    public ObjectPool<Cube> GetPool() 
-    {
-        return _pool; 
-    }
-
-    private void GetCube()
-    {
-        _pool.Get();
-    }
-
 }

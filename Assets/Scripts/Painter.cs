@@ -1,21 +1,32 @@
 using UnityEngine;
 
+[RequireComponent(typeof(Renderer))]
+
 public class Painter : MonoBehaviour
 {
     private bool _hasChangedColor = false;
+    private Renderer _renderer;
+
+    private void Awake()
+    {
+        _renderer = GetComponent<Renderer>();
+    }
 
     private void OnEnable()
     {
-        GetComponent<Renderer>().material.color = Color.yellow;
+        _renderer.material.color = Color.yellow;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
-        if (!_hasChangedColor)
+        if (collision.collider.TryGetComponent(out Platform platform))
         {
-            Color newColor = Random.ColorHSV();
-            GetComponent<Renderer>().material.color = newColor;
-            _hasChangedColor = true;
+            if (_hasChangedColor == false)
+            {
+                Color newColor = Random.ColorHSV();
+                _renderer.material.color = newColor;
+                _hasChangedColor = true;
+            }
         }
     }
 

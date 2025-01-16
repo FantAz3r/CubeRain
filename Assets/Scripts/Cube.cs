@@ -3,6 +3,8 @@ using System.Collections;
 using UnityEngine;
 using Random = UnityEngine.Random;
 
+[RequireComponent(typeof(Rigidbody))]
+
 public class Cube : MonoBehaviour
 {
     [SerializeField] private int _minLifeTime = 2;
@@ -10,9 +12,11 @@ public class Cube : MonoBehaviour
 
     public event Action<Cube> EndLifeTime;
     private WaitForSeconds wait;
+    private Rigidbody _rigidbody;
 
     private void OnEnable()
     {
+        Rigidbody _rigidbody = GetComponent<Rigidbody>();
         wait = new WaitForSeconds(Random.Range(_minLifeTime, _maxLifeTime));
     }
 

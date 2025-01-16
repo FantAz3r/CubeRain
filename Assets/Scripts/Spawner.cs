@@ -1,12 +1,9 @@
 using System.Collections;
 using UnityEngine;
 
-
-
 public class Spawner : MonoBehaviour
 {
     [SerializeField] private int _startPoolSize = 5;
-    [SerializeField] private int _maxPoolSize = 10;
     [SerializeField] private float _spawnTime = 1f;
     [SerializeField] private Cube _cubePrefab; 
     [SerializeField] private ObjectPool<Cube> _cubePool;
@@ -36,14 +33,6 @@ public class Spawner : MonoBehaviour
         }
     }
 
-    private void OnValidate()
-    {
-        if (_startPoolSize > _maxPoolSize)
-        {
-            _maxPoolSize = _startPoolSize + 1;
-        }
-    }
-
     private void StartCounting()
     {
         _isRain = true;
@@ -68,9 +57,13 @@ public class Spawner : MonoBehaviour
     private void SpawnCube()
     {
         Cube cube = _cubePool.Get();
-        cube.transform.position = _spawnZone.GenerateSpawnPoint();
-        cube.EndLifeTime += _cubePool.Release;
-        cube.gameObject.SetActive(true);
+
+        if (cube != null) 
+        {
+            cube.EndLifeTime += Release; 
+            cube.transform.position = _spawnZone.GenerateSpawnPoint();
+            cube.gameObject.SetActive(true);
+        }
     }
 
     private void Release(Cube cube)

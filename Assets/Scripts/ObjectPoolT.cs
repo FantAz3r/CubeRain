@@ -1,43 +1,47 @@
 using System.Collections.Generic;
-using System.Linq;
 using UnityEngine;
 
 public class ObjectPool<T> where T : MonoBehaviour
 {
     private T _prefab;
     private List<T> _objects;
-    private Stack<T> _avalubleObjects;
+    private Stack<T> _availableObjects;
 
     public ObjectPool(T prefab, int startPoolSize)
     {
         _prefab = prefab;
         _objects = new List<T>();
+        _availableObjects = new Stack<T>();
 
         for (int i = 0; i < startPoolSize; i++)
         {
-            var obj = GameObject.Instantiate(_prefab);
-            obj.gameObject.SetActive(false);
+            T obj = GameObject.Instantiate(_prefab);
+            _availableObjects.Push(obj);
             _objects.Add(obj);
+            obj.gameObject.SetActive(false);
         }
-        _avalubleObjects = new Stack<T>(_objects);
     }
 
     public T Get()
     {
-        if(_avalubleObjects.Count > 0 )
+        if (_availableObjects.Count > 0)
         {
-            return _avalubleObjects.Pop();
+            T obj = _availableObjects.Pop();
+            ResetObjectSpeed(obj);
+            return obj;
         }
-        
-        T @object = Create();
-        _objects.Add(@object);
-        return @object;
+        else
+        {
+            T @object = Create();
+            _objects.Add(@object);
+            return @object;
+        }
     }
 
     public void Release(T obj)
     {
         obj.gameObject.SetActive(false);
-        _avalubleObjects.Push(obj);
+        _availableObjects.Push(obj);
     }
 
     private T Create()
@@ -45,5 +49,19 @@ public class ObjectPool<T> where T : MonoBehaviour
         T obj = GameObject.Instantiate(_prefab);
         _objects.Add(obj);
         return obj;
+    }
+
+    private void ResetObjectSpeed(T obj)
+    {
+        obj.transform.position = Vector3.zero;
+        obj.transform.rotation = Quaternion.identity;
+
+        Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
+
+        if (rigidbody != null)
+        {
+            rigidbody.velocity = Vector3.zero; 
+            rigidbody.angularVelocity = Vector3.zero; 
+        }
     }
 }

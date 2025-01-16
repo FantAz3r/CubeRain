@@ -27,7 +27,6 @@ public class ObjectPool<T> where T : MonoBehaviour
         if (_availableObjects.Count > 0)
         {
             T obj = _availableObjects.Pop();
-            ResetObjectSpeed(obj);
             return obj;
         }
         else
@@ -40,6 +39,15 @@ public class ObjectPool<T> where T : MonoBehaviour
 
     public void Release(T obj)
     {
+        obj.transform.position = Vector3.zero;
+        obj.transform.rotation = Quaternion.identity;
+
+        if (obj.TryGetComponent(out Rigidbody rigidbody))
+        {
+            rigidbody.velocity = Vector3.zero;
+            rigidbody.angularVelocity = Vector3.zero;
+        }
+
         obj.gameObject.SetActive(false);
         _availableObjects.Push(obj);
     }
@@ -49,19 +57,5 @@ public class ObjectPool<T> where T : MonoBehaviour
         T obj = GameObject.Instantiate(_prefab);
         _objects.Add(obj);
         return obj;
-    }
-
-    private void ResetObjectSpeed(T obj)
-    {
-        obj.transform.position = Vector3.zero;
-        obj.transform.rotation = Quaternion.identity;
-
-        Rigidbody rigidbody = obj.GetComponent<Rigidbody>();
-
-        if (rigidbody != null)
-        {
-            rigidbody.velocity = Vector3.zero; 
-            rigidbody.angularVelocity = Vector3.zero; 
-        }
     }
 }

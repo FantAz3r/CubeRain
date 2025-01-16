@@ -4,7 +4,7 @@ using UnityEngine;
 using Random = UnityEngine.Random;
 
 [RequireComponent(typeof(Rigidbody))]
-
+[RequireComponent(typeof(Renderer))]
 public class Cube : MonoBehaviour
 {
     [SerializeField] private int _minLifeTime = 2;
@@ -12,23 +12,41 @@ public class Cube : MonoBehaviour
 
     public event Action<Cube> EndLifeTime;
     private WaitForSeconds wait;
-    private Rigidbody _rigidbody;
+    private bool _hasChangedColor = false;
+    private Renderer _renderer;
+
+    private void Awake()
+    {
+        _renderer = GetComponent<Renderer>();
+        wait = new WaitForSeconds(Random.Range(_minLifeTime, _maxLifeTime + 1));
+    }
 
     private void OnEnable()
     {
-        Rigidbody _rigidbody = GetComponent<Rigidbody>();
-        wait = new WaitForSeconds(Random.Range(_minLifeTime, _maxLifeTime));
+        _renderer.material.color = Color.yellow;
     }
 
     private void OnCollisionEnter(Collision collision)
     {
         if (collision.collider.TryGetComponent(out Platform platform))
         {
-            StartCoroutine(CubeLife());
+            StartCoroutine(LivingCube());
+
+            if (_hasChangedColor == false)
+            {
+                Color newColor = Random.ColorHSV();
+                _renderer.material.color = newColor;
+                _hasChangedColor = true;
+            }
         }
     }
 
-    private IEnumerator CubeLife()
+    private void OnDisable()
+    {
+        _hasChangedColor = false;
+    }
+
+    private IEnumerator LivingCube()
     {
         yield return wait;
         EndLifeTime?.Invoke(this);

@@ -3,8 +3,7 @@ using System.Collections.Generic;
 using UnityEngine;
 
 [RequireComponent(typeof(Collider))]
-
-public class SpawnZone : MonoBehaviour
+public class PointGenerator : MonoBehaviour
 {
     [SerializeField] private float _spawnZoneWidth;
     [SerializeField] private float _spawnZoneHeight = 15f;
@@ -14,6 +13,7 @@ public class SpawnZone : MonoBehaviour
     private void Awake()
     {
         _spawnCollider = GetComponent<Collider>();
+
         if (_spawnCollider != null)
         {
             _spawnZoneWidth = _spawnCollider.bounds.size.x;

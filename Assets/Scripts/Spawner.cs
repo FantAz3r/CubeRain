@@ -5,10 +5,10 @@ public class Spawner : MonoBehaviour
 {
     [SerializeField] private int _startPoolSize = 5;
     [SerializeField] private float _spawnTime = 1f;
-    [SerializeField] private Cube _cubePrefab; 
+    [SerializeField] private Cube _cubePrefab;
     [SerializeField] private ObjectPool<Cube> _cubePool;
     [SerializeField] private bool _isRain;
-    [SerializeField]private SpawnZone _spawnZone;
+    [SerializeField] private PointGenerator _spawnZone;
 
     private WaitForSeconds wait;
 
@@ -17,37 +17,15 @@ public class Spawner : MonoBehaviour
         wait = new WaitForSeconds(_spawnTime);
         _cubePool = new ObjectPool<Cube>(_cubePrefab, _startPoolSize);
     }
-   
-    private void Update()
-    {
-        if (Input.GetMouseButtonDown(0))
-        {
-            if (_isRain)
-            {
-                StopCounting();
-            }
-            else
-            {
-                StartCounting();
-            }
-        }
-    }
 
-    private void StartCounting()
+    private void Start()
     {
-        _isRain = true;
         StartCoroutine(SpawnAfterDelay());
-    }
-
-    private void StopCounting()
-    {
-        _isRain = false;
-        StopCoroutine(SpawnAfterDelay());
     }
 
     private IEnumerator SpawnAfterDelay()
     {
-        while(_isRain)
+        while (true)
         {
             yield return wait;
             SpawnCube();
@@ -57,13 +35,10 @@ public class Spawner : MonoBehaviour
     private void SpawnCube()
     {
         Cube cube = _cubePool.Get();
+        cube.EndLifeTime += Release;
+        cube.transform.position = _spawnZone.GenerateSpawnPoint();
+        cube.gameObject.SetActive(true);
 
-        if (cube != null) 
-        {
-            cube.EndLifeTime += Release; 
-            cube.transform.position = _spawnZone.GenerateSpawnPoint();
-            cube.gameObject.SetActive(true);
-        }
     }
 
     private void Release(Cube cube)

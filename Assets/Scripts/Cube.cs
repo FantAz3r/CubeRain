@@ -10,15 +10,15 @@ public class Cube : MonoBehaviour
     [SerializeField] private int _minLifeTime = 2;
     [SerializeField] private int _maxLifeTime = 5;
 
-    public event Action<Cube> EndLifeTime;
-    private WaitForSeconds wait;
+    public event Action<Cube> LifeTimeEnded;
+    private WaitForSeconds _wait;
     private bool _hasChangedColor = false;
     private Renderer _renderer;
 
     private void Awake()
     {
         _renderer = GetComponent<Renderer>();
-        wait = new WaitForSeconds(Random.Range(_minLifeTime, _maxLifeTime + 1));
+        _wait = new WaitForSeconds(Random.Range(_minLifeTime, _maxLifeTime + 1));
     }
 
     private void OnEnable()
@@ -48,7 +48,7 @@ public class Cube : MonoBehaviour
 
     private IEnumerator LivingCube()
     {
-        yield return wait;
-        EndLifeTime?.Invoke(this);
+        yield return _wait;
+        LifeTimeEnded?.Invoke(this);
     }
 }

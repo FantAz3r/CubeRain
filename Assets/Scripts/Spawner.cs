@@ -6,15 +6,15 @@ public class Spawner : MonoBehaviour
     [SerializeField] private int _startPoolSize = 5;
     [SerializeField] private float _spawnTime = 1f;
     [SerializeField] private Cube _cubePrefab;
-    [SerializeField] private ObjectPool<Cube> _cubePool;
     [SerializeField] private bool _isRain;
     [SerializeField] private PointGenerator _spawnZone;
 
-    private WaitForSeconds wait;
+    private ObjectPool<Cube> _cubePool;
+    private WaitForSeconds _wait;
 
     private void Awake()
     {
-        wait = new WaitForSeconds(_spawnTime);
+        _wait = new WaitForSeconds(_spawnTime);
         _cubePool = new ObjectPool<Cube>(_cubePrefab, _startPoolSize);
     }
 
@@ -27,7 +27,7 @@ public class Spawner : MonoBehaviour
     {
         while (true)
         {
-            yield return wait;
+            yield return _wait;
             SpawnCube();
         }
     }
@@ -35,7 +35,7 @@ public class Spawner : MonoBehaviour
     private void SpawnCube()
     {
         Cube cube = _cubePool.Get();
-        cube.EndLifeTime += Release;
+        cube.LifeTimeEnded += Release;
         cube.transform.position = _spawnZone.GenerateSpawnPoint();
         cube.gameObject.SetActive(true);
 
@@ -43,7 +43,7 @@ public class Spawner : MonoBehaviour
 
     private void Release(Cube cube)
     {
-        cube.EndLifeTime -= Release;
+        cube.LifeTimeEnded -= Release;
         _cubePool.Release(cube);
     }
 }

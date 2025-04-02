@@ -1,49 +1,27 @@
-using System.Collections;
 using UnityEngine;
 
-public class Spawner : MonoBehaviour
+public abstract class Spawner<T>: MonoBehaviour where T :BaseEntity
 {
     [SerializeField] private int _startPoolSize = 5;
-    [SerializeField] private float _spawnTime = 1f;
-    [SerializeField] private Cube _cubePrefab;
-    [SerializeField] private bool _isRain;
-    [SerializeField] private PointGenerator _spawnZone;
+    [SerializeField] private T _prefab;
 
-    private ObjectPool<Cube> _cubePool;
-    private WaitForSeconds _wait;
+    private ObjectPool<T> _pool;
 
-    private void Awake()
+    protected virtual void Awake()
     {
-        _wait = new WaitForSeconds(_spawnTime);
-        _cubePool = new ObjectPool<Cube>(_cubePrefab, _startPoolSize);
+        _pool = new ObjectPool<T>(_prefab, _startPoolSize);
     }
 
-    private void Start()
+    protected void SpawnEntity(Vector3 position)
     {
-        StartCoroutine(SpawnAfterDelay());
+        _prefab = _pool.Get();
+        _prefab.transform.position = position;
+        _prefab.gameObject.SetActive(true);
+        _prefab.TimeEnded += OnEntityLifeTimeEnded;
     }
 
-    private IEnumerator SpawnAfterDelay()
+    protected virtual void OnEntityLifeTimeEnded(BaseEntity entity)
     {
-        while (true)
-        {
-            yield return _wait;
-            SpawnCube();
-        }
-    }
-
-    private void SpawnCube()
-    {
-        Cube cube = _cubePool.Get();
-        cube.LifeTimeEnded += Release;
-        cube.transform.position = _spawnZone.GenerateSpawnPoint();
-        cube.gameObject.SetActive(true);
-
-    }
-
-    private void Release(Cube cube)
-    {
-        cube.LifeTimeEnded -= Release;
-        _cubePool.Release(cube);
+        entity.gameObject.SetActive(false);
     }
 }

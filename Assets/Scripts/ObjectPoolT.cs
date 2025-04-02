@@ -15,7 +15,7 @@ public class ObjectPool<T> where T : MonoBehaviour
 
         for (int i = 0; i < startPoolSize; i++)
         {
-            T obj = GameObject.Instantiate(_prefab);
+            T obj = Object.Instantiate(_prefab);
             _availableObjects.Push(obj);
             _objects.Add(obj);
             obj.gameObject.SetActive(false);

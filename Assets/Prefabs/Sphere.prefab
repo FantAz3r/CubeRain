@@ -123,7 +123,7 @@ MonoBehaviour:
   m_EditorClassIdentifier: 
   _minLifeTime: 2
   _maxLifeTime: 5
-  _explosionRadius: 20
+  _explosionRadius: 50
   _explosionForce: 200
 --- !u!54 &6506257002852603464
 Rigidbody:

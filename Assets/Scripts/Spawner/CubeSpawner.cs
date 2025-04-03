@@ -14,11 +14,7 @@ public class CubeSpawner : Spawner<Cube>
     protected override void Awake()
     {
         base.Awake();
-        _wait = new WaitForSeconds(_spawnTime); 
-    }
-
-    private void Start()
-    {
+        _wait = new WaitForSeconds(_spawnTime);
         StartCoroutine(SpawnCorootine());
     }
 
@@ -26,14 +22,14 @@ public class CubeSpawner : Spawner<Cube>
     {
         while(enabled)
         {
-            yield return _wait;
             SpawnEntity(_spawnZone.GenerateSpawnPoint());
+            yield return _wait;
         }
     }
 
     protected override void OnEntityLifeTimeEnded(BaseEntity entity)
     {
-        base.OnEntityLifeTimeEnded(entity);
         CubeDisappeared?.Invoke(entity.transform.position);
+        base.OnEntityLifeTimeEnded(entity);
     }
 }

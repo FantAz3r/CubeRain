@@ -1,3 +1,4 @@
+using System;
 using UnityEngine;
 
 public class BombSpawner : Spawner<Bomb>
@@ -13,6 +14,4 @@ public class BombSpawner : Spawner<Bomb>
     {
         _cubeSpawner.CubeDisappeared -= SpawnEntity;
     }
-
-
 }

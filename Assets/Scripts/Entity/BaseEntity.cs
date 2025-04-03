@@ -23,8 +23,7 @@ public abstract class BaseEntity : MonoBehaviour
         _delay = Random.Range(_minLifeTime, _maxLifeTime + 1);
         _wait = new WaitForSeconds(_delay);
         _originalColor = _renderer.material.color;
-        _renderer.material.SetFloat("_Mode", 3);
-    }
+    }            
 
     protected void TimeEnd(BaseEntity entity)
     {

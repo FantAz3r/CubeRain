@@ -1,3 +1,4 @@
+using System;
 using System.Collections.Generic;
 using UnityEngine;
 
@@ -7,19 +8,15 @@ public class ObjectPool<T> where T : MonoBehaviour
     private List<T> _objects;
     private Stack<T> _availableObjects;
 
-    public ObjectPool(T prefab, int startPoolSize)
+    public event Action ObjectInstatiated;
+    public event Action ObjectActivated;
+    public event Action ObjectDeactivated;
+
+    public ObjectPool(T prefab)
     {
         _prefab = prefab;
         _objects = new List<T>();
         _availableObjects = new Stack<T>();
-
-        for (int i = 0; i < startPoolSize; i++)
-        {
-            T obj = Object.Instantiate(_prefab);
-            _availableObjects.Push(obj);
-            _objects.Add(obj);
-            obj.gameObject.SetActive(false);
-        }
     }
 
     public T Get()
@@ -27,12 +24,13 @@ public class ObjectPool<T> where T : MonoBehaviour
         if (_availableObjects.Count > 0)
         {
             T obj = _availableObjects.Pop();
+            obj.gameObject.SetActive(true);
+            ObjectActivated?.Invoke();
             return obj;
         }
         else
         {
             T @object = Create();
-            _objects.Add(@object);
             return @object;
         }
     }
@@ -42,18 +40,20 @@ public class ObjectPool<T> where T : MonoBehaviour
         obj.transform.position = Vector3.zero;
         obj.transform.rotation = Quaternion.identity;
 
-        if (obj.TryGetComponent(out Rigidbody rigidbody))
+        if(obj.TryGetComponent(out Rigidbody rigidbody))
         {
             rigidbody.velocity = Vector3.zero;
             rigidbody.angularVelocity = Vector3.zero;
         }
 
         obj.gameObject.SetActive(false);
+        ObjectDeactivated?.Invoke();
         _availableObjects.Push(obj);
     }
 
     private T Create()
     {
+        ObjectInstatiated?.Invoke();
         T obj = GameObject.Instantiate(_prefab);
         _objects.Add(obj);
         return obj;
